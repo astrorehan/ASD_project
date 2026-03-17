@@ -6,7 +6,7 @@ STRUCT Pesanan:
     STRING nama_pelanggan
     STRING jenis_sepatu
     STRING jenis_layanan
-    INTEGER estimasi_waktu // dalam menit/jam
+    INTEGER estimasi_waktu
 
 
 STRUCT Node:
@@ -55,14 +55,16 @@ PROCEDURE TampilAntrean():
     END WHILE
 END PROCEDURE
 
-## Operasi Stack (Riwayat)
+## 3. Operasi Stack (Riwayat)
 ### 3.1 Tampilkan Pesanan Terakhir (Peek)
 PROCEDURE TampilTerakhirDiproses():
     IF Stack.top == NULL THEN
         PRINT "Belum ada riwayat pesanan."
     ELSE
         PRINT "Pesanan terakhir diproses: " + Stack.top.data.nama_pelanggan
-        // Print detail lainnya (jenis sepatu, layanan, dll)
+        PRINT "Jenis sepatu  : " + Stack.top.data.jenis_sepatu
+        PRINT "Jenis layanan : " + Stack.top.data.jenis_layanan
+        PRINT "Estimasi waktu: " + Stack.top.data.estimasi_waktu
     END IF
 END PROCEDURE
 
@@ -90,7 +92,6 @@ PROCEDURE ProsesPesanan():
         RETURN
     END IF
 
-    // Ambil data dari antrean terdepan (Dequeue)
     Node temp = Queue.front
     Pesanan pesanan_diproses = temp.data
     Queue.front = Queue.front.next
@@ -100,7 +101,6 @@ PROCEDURE ProsesPesanan():
     END IF
     Hapus memori temp
 
-    // Simpan data ke riwayat menggunakan Stack (Push)
     Buat Node baru (newNode)
     newNode.data = pesanan_diproses
     newNode.next = Stack.top
@@ -109,4 +109,65 @@ PROCEDURE ProsesPesanan():
     PRINT "Pesanan atas nama " + pesanan_diproses.nama_pelanggan + " telah selesai diproses."
 END PROCEDURE
 
-## 5. Program Utama
+## 5. Operasi file I/O
+PROCEDURE SimpanDataKeFile():
+    Buka file "antrean.txt" dalam mode TULIS (Write)
+    Node current = Queue.front
+    WHILE current != NULL DO
+        Tulis current.data ke "antrean.txt" (format: nama,sepatu,layanan,waktu)
+        current = current.next
+    END WHILE
+    Tutup file "antrean.txt"
+
+    Buka file "riwayat.txt" dalam mode TULIS (Write)
+    Node currentRiwayat = Stack.top
+    WHILE currentRiwayat != NULL DO
+        Tulis currentRiwayat.data ke "riwayat.txt" (format: nama,sepatu,layanan,waktu)
+        currentRiwayat = currentRiwayat.next
+    END WHILE
+    Tutup file "riwayat.txt"
+END PROCEDURE
+
+PROCEDURE MuatDataDariFile():
+    Buka file "antrean.txt" dalam mode BACA (Read)
+    WHILE tidak di akhir file DO
+        Baca 1 baris data
+        Pisahkan data menjadi nama, sepatu, layanan, waktu
+        Buat Pesanan baru dari data tersebut
+        TambahAntrean(Pesanan baru) 
+    END WHILE
+    Tutup file "antrean.txt"
+END PROCEDURE
+
+## 6. Program Utama
+
+START:
+    MuatDataDariFile()
+
+    REPEAT
+        PRINT "===== Sistem Antrean Cuci Sepatu ====="
+        PRINT "1. Tambah Pesanan"
+        PRINT "2. Proses Pesanan Berikutnya"
+        PRINT "3. Tampilkan Pesanan Terakhir Diproses"
+        PRINT "4. Tampilkan Antrean"
+        PRINT "5. Tampilkan Riwayat"
+        PRINT "0. Keluar"
+        INPUT pilihan
+
+        IF pilihan == 1 THEN
+            INPUT nama_pelanggan, jenis_sepatu, jenis_layanan, estimasi_waktu
+            Buat Pesanan baru dari data tersebut
+            TambahAntrean(pesanan_baru)
+        ELSE IF pilihan == 2 THEN
+            ProsesPesanan()
+        ELSE IF pilihan == 3 THEN
+            TampilTerakhirDiproses()
+        ELSE IF pilihan == 4 THEN
+            TampilAntrean()
+        ELSE IF pilihan == 5 THEN
+            TampilRiwayat()
+        ELSE IF pilihan == 0 THEN
+            SimpanDataKeFile()
+        END IF
+    UNTIL pilihan == 0
+END
