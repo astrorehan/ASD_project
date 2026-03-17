@@ -1,24 +1,24 @@
 # Pseudocode Sistem Antrean Tempat Cuci Sepatu
 
 ## 1. Definisi Struktur Data (Struct)
-// Definisi Data Pesanan
+
 STRUCT Pesanan:
     STRING nama_pelanggan
     STRING jenis_sepatu
     STRING jenis_layanan
     INTEGER estimasi_waktu // dalam menit/jam
 
-// Definisi Node untuk Linked List
+
 STRUCT Node:
     Pesanan data
     Node pointer next
 
-// Definisi Queue (Antrean)
+
 STRUCT Queue:
     Node pointer front = NULL
     Node pointer rear = NULL
 
-// Definisi Stack (Riwayat)
+
 STRUCT Stack:
     Node pointer top = NULL
 
