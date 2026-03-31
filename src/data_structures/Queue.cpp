@@ -1,4 +1,5 @@
 #include "Queue.h"
+#include "../models/Pesanan.h"
 
 // Inisialisasi awal, antrean kosong
 Queue::Queue() {
@@ -62,8 +63,8 @@ void Queue::display() {
     cout << "\n--- Daftar Antrean Saat Ini ---\n";
     while (current != nullptr) {
         cout << nomor << ". " << current->data.namaPelanggan 
-             << " | Sepatu: " << current->data.jenisSepatu
-             << " | Layanan: " << current->data.jenisLayanan << endl;
+             << " | Sepatu: " << toString(current->data.jenisSepatu)
+             << " | Layanan: " << toString(current->data.jenisLayanan) << endl;
         
         current = current->next;
         nomor++;

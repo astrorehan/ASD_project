@@ -1,5 +1,6 @@
 #include <iostream>
 #include "Stack.h"
+#include "../models/Pesanan.h"
 using namespace std;
 
 // Inisialisasi awal, riwayat kosong
@@ -30,8 +31,8 @@ void Stack::peek() {
     
     cout << "\n--- Pesanan Terakhir yang Diselesaikan ---\n";
     cout << "Nama    : " << top->data.namaPelanggan << endl;
-    cout << "Sepatu  : " << top->data.jenisSepatu << endl;
-    cout << "Layanan : " << top->data.jenisLayanan << endl;
+    cout << "Sepatu  : " << toString(top->data.jenisSepatu) << endl;
+    cout << "Layanan : " << toString(top->data.jenisLayanan) << endl;
     cout << "------------------------------------------\n";
 }
 
@@ -47,8 +48,8 @@ void Stack::display() {
     cout << "\n--- Daftar Riwayat Pesanan Selesai ---\n";
     while (current != nullptr) {
         cout << nomor << ". " << current->data.namaPelanggan 
-             << " | Sepatu: " << current->data.jenisSepatu 
-             << " | Layanan: " << current->data.jenisLayanan << endl;
+             << " | Sepatu: " << toString(current->data.jenisSepatu) 
+             << " | Layanan: " << toString(current->data.jenisLayanan) << endl;
         
         current = current->next;
         nomor++;
