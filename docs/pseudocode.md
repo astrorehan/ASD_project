@@ -1,173 +1,243 @@
 # Pseudocode Sistem Antrean Tempat Cuci Sepatu
 
-## 1. Definisi Struktur Data (Struct)
+Dokumen ini sudah disesuaikan dengan implementasi CLI saat ini:
+- Queue dan Stack menggunakan linked list.
+- Jenis sepatu dan jenis layanan menggunakan enum.
+- Input jenis sepatu/layanan mendukung opsi batal (0 = Cancel).
+
+## 1. Definisi Tipe Data
+
+ENUM JenisSepatu:
+    SNEAKERS
+    BOOTS
+    SANDALS
+    FORMAL
+    OLAHRAGA
+
+ENUM JenisLayanan:
+    REGULAR
+    DEEP_CLEANING
+    REPAIR
+    REPAINT
+    WHITENING
 
 STRUCT Pesanan:
-    STRING nama_pelanggan
-    STRING jenis_sepatu
-    STRING jenis_layanan
-    INTEGER estimasi_waktu
-
+    STRING namaPelanggan
+    JenisSepatu jenisSepatu
+    JenisLayanan jenisLayanan
 
 STRUCT Node:
     Pesanan data
     Node pointer next
 
-
 STRUCT Queue:
     Node pointer front = NULL
     Node pointer rear = NULL
 
-
 STRUCT Stack:
     Node pointer top = NULL
 
-## 2. Operasi Queue (Antrian)
-### 2.1 Tambah Pesanan
-PROCEDURE TambahAntrean(Pesanan pesanan_baru):
-    Buat Node baru (newNode)
-    newNode.data = pesanan_baru
-    newNode.next = NULL
+## 2. Fungsi Bantu Enum
 
-    IF Queue.rear == NULL THEN
-        Queue.front = newNode
-        Queue.rear = newNode
+FUNCTION FromChoiceSepatu(INTEGER pilihan, OUT JenisSepatu hasil) -> BOOLEAN:
+    SWITCH pilihan
+        CASE 1: hasil = SNEAKERS, RETURN TRUE
+        CASE 2: hasil = BOOTS, RETURN TRUE
+        CASE 3: hasil = SANDALS, RETURN TRUE
+        CASE 4: hasil = FORMAL, RETURN TRUE
+        CASE 5: hasil = OLAHRAGA, RETURN TRUE
+        DEFAULT: RETURN FALSE
+    END SWITCH
+
+FUNCTION FromChoiceLayanan(INTEGER pilihan, OUT JenisLayanan hasil) -> BOOLEAN:
+    SWITCH pilihan
+        CASE 1: hasil = REGULAR, RETURN TRUE
+        CASE 2: hasil = DEEP_CLEANING, RETURN TRUE
+        CASE 3: hasil = REPAIR, RETURN TRUE
+        CASE 4: hasil = REPAINT, RETURN TRUE
+        CASE 5: hasil = WHITENING, RETURN TRUE
+        DEFAULT: RETURN FALSE
+    END SWITCH
+
+FUNCTION ToStringSepatu(JenisSepatu nilai) -> STRING:
+    RETURN label teks sepatu sesuai enum
+
+FUNCTION ToStringLayanan(JenisLayanan nilai) -> STRING:
+    RETURN label teks layanan sesuai enum
+
+## 3. Operasi Queue
+
+PROCEDURE Enqueue(Pesanan pesananBaru):
+    Buat Node baru
+    nodeBaru.data = pesananBaru
+    nodeBaru.next = NULL
+
+    IF rear == NULL THEN
+        front = nodeBaru
+        rear = nodeBaru
     ELSE
-        Queue.rear.next = newNode
-        Queue.rear = newNode
+        rear.next = nodeBaru
+        rear = nodeBaru
     END IF
-    PRINT "Pesanan berhasil ditambahkan ke antrean."
 END PROCEDURE
 
-### 2.2 Tampilkan Antrian
+FUNCTION Dequeue() -> Pesanan:
+    // Dipanggil hanya jika queue tidak kosong
+    temp = front
+    hasil = temp.data
+    front = front.next
+
+    IF front == NULL THEN
+        rear = NULL
+    END IF
+
+    Hapus temp
+    RETURN hasil
+END FUNCTION
+
 PROCEDURE TampilAntrean():
-    IF Queue.front == NULL THEN
+    IF front == NULL THEN
         PRINT "Antrean saat ini kosong."
         RETURN
     END IF
 
-    Node current = Queue.front
-    INTEGER nomor = 1
+    current = front
+    nomor = 1
     WHILE current != NULL DO
-        PRINT nomor + ". " + current.data.nama_pelanggan + " - " + current.data.jenis_layanan
+        PRINT nomor, current.data.namaPelanggan,
+              ToStringSepatu(current.data.jenisSepatu),
+              ToStringLayanan(current.data.jenisLayanan)
         current = current.next
         nomor = nomor + 1
     END WHILE
 END PROCEDURE
 
-## 3. Operasi Stack (Riwayat)
-### 3.1 Tampilkan Pesanan Terakhir (Peek)
+## 4. Operasi Stack
+
+PROCEDURE PushRiwayat(Pesanan pesananSelesai):
+    Buat Node baru
+    nodeBaru.data = pesananSelesai
+    nodeBaru.next = top
+    top = nodeBaru
+END PROCEDURE
+
 PROCEDURE TampilTerakhirDiproses():
-    IF Stack.top == NULL THEN
-        PRINT "Belum ada riwayat pesanan."
-    ELSE
-        PRINT "Pesanan terakhir diproses: " + Stack.top.data.nama_pelanggan
-        PRINT "Jenis sepatu  : " + Stack.top.data.jenis_sepatu
-        PRINT "Jenis layanan : " + Stack.top.data.jenis_layanan
-        PRINT "Estimasi waktu: " + Stack.top.data.estimasi_waktu
-    END IF
-END PROCEDURE
-
-### 3.2 Tampilkan Semua Riwayat
-PROCEDURE TampilRiwayat():
-    IF Stack.top == NULL THEN
-        PRINT "Riwayat kosong."
+    IF top == NULL THEN
+        PRINT "Belum ada riwayat pesanan yang selesai."
         RETURN
     END IF
 
-    Node current = Stack.top
-    INTEGER nomor = 1
+    PRINT top.data.namaPelanggan,
+          ToStringSepatu(top.data.jenisSepatu),
+          ToStringLayanan(top.data.jenisLayanan)
+END PROCEDURE
+
+PROCEDURE TampilRiwayat():
+    IF top == NULL THEN
+        PRINT "Riwayat pesanan masih kosong."
+        RETURN
+    END IF
+
+    current = top
+    nomor = 1
     WHILE current != NULL DO
-        PRINT nomor + ". " + current.data.nama_pelanggan + " - " + current.data.jenis_layanan
+        PRINT nomor, current.data.namaPelanggan,
+              ToStringSepatu(current.data.jenisSepatu),
+              ToStringLayanan(current.data.jenisLayanan)
         current = current.next
         nomor = nomor + 1
     END WHILE
 END PROCEDURE
 
-## 4. Operasi Transisi (Memproses Pesanan)
-### 4.1 Proses Pesanan (Dequeue & Push)
-PROCEDURE ProsesPesanan():
-    IF Queue.front == NULL THEN
-        PRINT "Antrean kosong. Tidak ada pesanan untuk diproses."
+## 5. Operasi Proses Pesanan
+
+PROCEDURE ProsesPesananBerikutnya():
+    IF front == NULL THEN
+        PRINT "Antrean masih kosong."
         RETURN
     END IF
 
-    Node temp = Queue.front
-    Pesanan pesanan_diproses = temp.data
-    Queue.front = Queue.front.next
+    pesananDiproses = Dequeue()
+    PRINT "Memproses pesanan", pesananDiproses.namaPelanggan
+    PRINT "Cuci sepatu selesai"
 
-    IF Queue.front == NULL THEN
-        Queue.rear = NULL
-    END IF
-    Hapus memori temp
-
-    Buat Node baru (newNode)
-    newNode.data = pesanan_diproses
-    newNode.next = Stack.top
-    Stack.top = newNode
-
-    PRINT "Pesanan atas nama " + pesanan_diproses.nama_pelanggan + " telah selesai diproses."
+    PushRiwayat(pesananDiproses)
+    PRINT "Pesanan dipindahkan ke riwayat"
 END PROCEDURE
 
-## 5. Operasi file I/O
-PROCEDURE SimpanDataKeFile():
-    Buka file "antrean.txt" dalam mode TULIS (Write)
-    Node current = Queue.front
-    WHILE current != NULL DO
-        Tulis current.data ke "antrean.txt" (format: nama,sepatu,layanan,waktu)
-        current = current.next
-    END WHILE
-    Tutup file "antrean.txt"
-
-    Buka file "riwayat.txt" dalam mode TULIS (Write)
-    Node currentRiwayat = Stack.top
-    WHILE currentRiwayat != NULL DO
-        Tulis currentRiwayat.data ke "riwayat.txt" (format: nama,sepatu,layanan,waktu)
-        currentRiwayat = currentRiwayat.next
-    END WHILE
-    Tutup file "riwayat.txt"
-END PROCEDURE
-
-PROCEDURE MuatDataDariFile():
-    Buka file "antrean.txt" dalam mode BACA (Read)
-    WHILE tidak di akhir file DO
-        Baca 1 baris data
-        Pisahkan data menjadi nama, sepatu, layanan, waktu
-        Buat Pesanan baru dari data tersebut
-        TambahAntrean(Pesanan baru) 
-    END WHILE
-    Tutup file "antrean.txt"
-END PROCEDURE
-
-## 6. Program Utama
+## 6. Program Utama (CLI)
 
 START:
-    MuatDataDariFile()
+    BUAT objek Queue antreanCucian
+    BUAT objek Stack riwayatCucian
 
-    REPEAT
-        PRINT "===== Sistem Antrean Cuci Sepatu ====="
-        PRINT "1. Tambah Pesanan"
-        PRINT "2. Proses Pesanan Berikutnya"
-        PRINT "3. Tampilkan Pesanan Terakhir Diproses"
-        PRINT "4. Tampilkan Antrean"
-        PRINT "5. Tampilkan Riwayat"
-        PRINT "0. Keluar"
-        INPUT pilihan
+    ULANGI
+        Tampilkan menu:
+            1. Tambah pesanan
+            2. Proses pesanan berikutnya
+            3. Tampil pesanan terakhir diproses
+            4. Tampil antrean
+            5. Tampil riwayat
+            0. Keluar
 
-        IF pilihan == 1 THEN
-            INPUT nama_pelanggan, jenis_sepatu, jenis_layanan, estimasi_waktu
-            Buat Pesanan baru dari data tersebut
-            TambahAntrean(pesanan_baru)
-        ELSE IF pilihan == 2 THEN
-            ProsesPesanan()
-        ELSE IF pilihan == 3 THEN
-            TampilTerakhirDiproses()
-        ELSE IF pilihan == 4 THEN
-            TampilAntrean()
-        ELSE IF pilihan == 5 THEN
-            TampilRiwayat()
-        ELSE IF pilihan == 0 THEN
-            SimpanDataKeFile()
-        END IF
-    UNTIL pilihan == 0
+        INPUT pilihan menu
+        VALIDASI bahwa input menu adalah angka
+
+        SWITCH pilihan
+            CASE 1:
+                INPUT namaPelanggan
+
+                // Pilih jenis sepatu dengan opsi cancel
+                ULANGI
+                    Tampilkan opsi sepatu (0-5)
+                    INPUT pilihSepatu
+                    IF pilihSepatu == 0 THEN
+                        tandai batalTambah
+                        BREAK
+                    END IF
+                SAMPAI FromChoiceSepatu valid
+
+                IF batalTambah THEN
+                    PRINT "Tambah pesanan dibatalkan"
+                    BREAK CASE
+                END IF
+
+                // Pilih jenis layanan dengan opsi cancel
+                ULANGI
+                    Tampilkan opsi layanan (0-5)
+                    INPUT pilihLayanan
+                    IF pilihLayanan == 0 THEN
+                        tandai batalTambah
+                        BREAK
+                    END IF
+                SAMPAI FromChoiceLayanan valid
+
+                IF batalTambah THEN
+                    PRINT "Tambah pesanan dibatalkan"
+                    BREAK CASE
+                END IF
+
+                Enqueue(pesananBaru)
+                PRINT "Pesanan berhasil masuk antrean"
+
+            CASE 2:
+                ProsesPesananBerikutnya()
+
+            CASE 3:
+                TampilTerakhirDiproses()
+
+            CASE 4:
+                TampilAntrean()
+
+            CASE 5:
+                TampilRiwayat()
+
+            CASE 0:
+                PRINT "Keluar program"
+
+            DEFAULT:
+                PRINT "Pilihan tidak valid"
+        END SWITCH
+
+    SAMPAI pilihan == 0
 END
