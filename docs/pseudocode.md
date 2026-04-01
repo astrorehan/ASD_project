@@ -1,12 +1,14 @@
 # Pseudocode Sistem Antrean Tempat Cuci Sepatu
 
-Dokumen ini sudah disesuaikan dengan implementasi CLI saat ini:
-- Queue dan Stack menggunakan linked list.
-- Jenis sepatu dan jenis layanan menggunakan enum.
-- Input jenis sepatu/layanan mendukung opsi batal (0 = Cancel).
+Dokumen ini disesuaikan dengan implementasi CLI terbaru di folder src, termasuk:
+- Queue dan Stack berbasis linked list.
+- Pemilihan enum dari input angka dengan opsi batal (0 = Cancel).
+- Perhitungan durasi layanan, total waktu antrean, dan estimasi selesai.
+- Konfirmasi sebelum pesanan benar-benar masuk antrean.
 
 ## 1. Definisi Tipe Data
 
+```text
 ENUM JenisSepatu:
     SNEAKERS
     BOOTS
@@ -25,38 +27,52 @@ STRUCT Pesanan:
     STRING namaPelanggan
     JenisSepatu jenisSepatu
     JenisLayanan jenisLayanan
+    INTEGER durasiLayananMenit
+    INTEGER estimasiSelesai
 
 STRUCT Node:
     Pesanan data
-    Node pointer next
+    Node POINTER next
 
 STRUCT Queue:
-    Node pointer front = NULL
-    Node pointer rear = NULL
+    Node POINTER front = NULL
+    Node POINTER rear = NULL
 
 STRUCT Stack:
-    Node pointer top = NULL
+    Node POINTER top = NULL
+```
 
-## 2. Fungsi Bantu Enum
+## 2. Fungsi Bantu Enum dan Durasi
 
+```text
 FUNCTION FromChoiceSepatu(INTEGER pilihan, OUT JenisSepatu hasil) -> BOOLEAN:
     SWITCH pilihan
-        CASE 1: hasil = SNEAKERS, RETURN TRUE
-        CASE 2: hasil = BOOTS, RETURN TRUE
-        CASE 3: hasil = SANDALS, RETURN TRUE
-        CASE 4: hasil = FORMAL, RETURN TRUE
-        CASE 5: hasil = OLAHRAGA, RETURN TRUE
+        CASE 1: hasil = SNEAKERS; RETURN TRUE
+        CASE 2: hasil = BOOTS; RETURN TRUE
+        CASE 3: hasil = SANDALS; RETURN TRUE
+        CASE 4: hasil = FORMAL; RETURN TRUE
+        CASE 5: hasil = OLAHRAGA; RETURN TRUE
         DEFAULT: RETURN FALSE
     END SWITCH
 
 FUNCTION FromChoiceLayanan(INTEGER pilihan, OUT JenisLayanan hasil) -> BOOLEAN:
     SWITCH pilihan
-        CASE 1: hasil = REGULAR, RETURN TRUE
-        CASE 2: hasil = DEEP_CLEANING, RETURN TRUE
-        CASE 3: hasil = REPAIR, RETURN TRUE
-        CASE 4: hasil = REPAINT, RETURN TRUE
-        CASE 5: hasil = WHITENING, RETURN TRUE
+        CASE 1: hasil = REGULAR; RETURN TRUE
+        CASE 2: hasil = DEEP_CLEANING; RETURN TRUE
+        CASE 3: hasil = REPAIR; RETURN TRUE
+        CASE 4: hasil = REPAINT; RETURN TRUE
+        CASE 5: hasil = WHITENING; RETURN TRUE
         DEFAULT: RETURN FALSE
+    END SWITCH
+
+FUNCTION DurasiStandarMenit(JenisLayanan nilai) -> INTEGER:
+    SWITCH nilai
+        CASE REGULAR: RETURN 60
+        CASE DEEP_CLEANING: RETURN 90
+        CASE REPAIR: RETURN 120
+        CASE REPAINT: RETURN 150
+        CASE WHITENING: RETURN 75
+        DEFAULT: RETURN 0
     END SWITCH
 
 FUNCTION ToStringSepatu(JenisSepatu nilai) -> STRING:
@@ -64,65 +80,91 @@ FUNCTION ToStringSepatu(JenisSepatu nilai) -> STRING:
 
 FUNCTION ToStringLayanan(JenisLayanan nilai) -> STRING:
     RETURN label teks layanan sesuai enum
+```
 
 ## 3. Operasi Queue
 
-PROCEDURE Enqueue(Pesanan pesananBaru):
-    Buat Node baru
-    nodeBaru.data = pesananBaru
-    nodeBaru.next = NULL
+```text
+FUNCTION QueueIsEmpty() -> BOOLEAN:
+    RETURN (front == NULL)
 
-    IF rear == NULL THEN
-        front = nodeBaru
-        rear = nodeBaru
+PROCEDURE Enqueue(Pesanan pesananBaru):
+    BUAT Node baru
+    newNode.data = pesananBaru
+    newNode.next = NULL
+
+    IF QueueIsEmpty() THEN
+        front = newNode
+        rear = newNode
     ELSE
-        rear.next = nodeBaru
-        rear = nodeBaru
+        rear.next = newNode
+        rear = newNode
     END IF
 END PROCEDURE
 
 FUNCTION Dequeue() -> Pesanan:
-    // Dipanggil hanya jika queue tidak kosong
+    // Dipanggil saat antrean dipastikan tidak kosong
     temp = front
-    hasil = temp.data
+    pesananDiproses = temp.data
     front = front.next
 
     IF front == NULL THEN
         rear = NULL
     END IF
 
-    Hapus temp
-    RETURN hasil
+    HAPUS temp
+    RETURN pesananDiproses
+END FUNCTION
+
+FUNCTION CalculateTime() -> INTEGER:
+    current = front
+    totalTime = 0
+
+    WHILE current != NULL DO
+        totalTime = totalTime + current.data.durasiLayananMenit
+        current.data.estimasiSelesai = totalTime
+        current = current.next
+    END WHILE
+
+    RETURN totalTime
 END FUNCTION
 
 PROCEDURE TampilAntrean():
-    IF front == NULL THEN
+    IF QueueIsEmpty() THEN
         PRINT "Antrean saat ini kosong."
         RETURN
     END IF
 
     current = front
     nomor = 1
+
     WHILE current != NULL DO
-        PRINT nomor, current.data.namaPelanggan,
+        PRINT nomor,
+              current.data.namaPelanggan,
               ToStringSepatu(current.data.jenisSepatu),
-              ToStringLayanan(current.data.jenisLayanan)
+              ToStringLayanan(current.data.jenisLayanan),
+              current.data.estimasiSelesai
         current = current.next
         nomor = nomor + 1
     END WHILE
 END PROCEDURE
+```
 
 ## 4. Operasi Stack
 
+```text
+FUNCTION StackIsEmpty() -> BOOLEAN:
+    RETURN (top == NULL)
+
 PROCEDURE PushRiwayat(Pesanan pesananSelesai):
-    Buat Node baru
-    nodeBaru.data = pesananSelesai
-    nodeBaru.next = top
-    top = nodeBaru
+    BUAT Node baru
+    newNode.data = pesananSelesai
+    newNode.next = top
+    top = newNode
 END PROCEDURE
 
 PROCEDURE TampilTerakhirDiproses():
-    IF top == NULL THEN
+    IF StackIsEmpty() THEN
         PRINT "Belum ada riwayat pesanan yang selesai."
         RETURN
     END IF
@@ -133,87 +175,159 @@ PROCEDURE TampilTerakhirDiproses():
 END PROCEDURE
 
 PROCEDURE TampilRiwayat():
-    IF top == NULL THEN
+    IF StackIsEmpty() THEN
         PRINT "Riwayat pesanan masih kosong."
         RETURN
     END IF
 
     current = top
     nomor = 1
+
     WHILE current != NULL DO
-        PRINT nomor, current.data.namaPelanggan,
+        PRINT nomor,
+              current.data.namaPelanggan,
               ToStringSepatu(current.data.jenisSepatu),
               ToStringLayanan(current.data.jenisLayanan)
         current = current.next
         nomor = nomor + 1
     END WHILE
 END PROCEDURE
+```
 
-## 5. Operasi Proses Pesanan
+## 5. Fungsi UI (CLI)
 
-PROCEDURE ProsesPesananBerikutnya():
-    IF front == NULL THEN
-        PRINT "Antrean masih kosong."
-        RETURN
-    END IF
+```text
+PROCEDURE TampilMenu():
+    PRINT daftar menu 1..5 dan 0
 
-    pesananDiproses = Dequeue()
-    PRINT "Memproses pesanan", pesananDiproses.namaPelanggan
-    PRINT "Cuci sepatu selesai"
+PROCEDURE PauseSebelumMenu():
+    PRINT "Tekan Enter untuk kembali ke menu..."
+    TUNGGU satu baris input
 
-    PushRiwayat(pesananDiproses)
-    PRINT "Pesanan dipindahkan ke riwayat"
-END PROCEDURE
+PROCEDURE ClearConsole():
+    KIRIM ANSI escape code untuk clear screen
 
-## 6. Program Utama (CLI)
+FUNCTION KonfirmasiSebelumEnqueue(Pesanan pesananBaru) -> BOOLEAN:
+    ULANGI
+        ClearConsole()
+        Tampilkan rincian pesanan:
+            nama
+            jenis sepatu
+            jenis layanan
+            estimasi selesai
 
-START:
-    BUAT objek Queue antreanCucian
-    BUAT objek Stack riwayatCucian
+        PRINT "Enter = konfirmasi, C = batal"
+        INPUT teks
+
+        IF teks kosong THEN
+            RETURN TRUE
+        ELSE IF teks == "C" atau "c" THEN
+            RETURN FALSE
+        ELSE
+            PRINT "Input tidak valid"
+            TUNGGU Enter
+        END IF
+    SAMPAI mendapat input valid
+END FUNCTION
+```
+
+## 6. Program Utama
+
+```text
+START
+    BUAT Queue antreanCucian
+    BUAT Stack riwayatCucian
 
     ULANGI
-        Tampilkan menu:
-            1. Tambah pesanan
-            2. Proses pesanan berikutnya
-            3. Tampil pesanan terakhir diproses
-            4. Tampil antrean
-            5. Tampil riwayat
-            0. Keluar
+        ClearConsole()
+        TampilMenu()
 
-        INPUT pilihan menu
-        VALIDASI bahwa input menu adalah angka
+        INPUT pilihan
+        IF input menu bukan angka THEN
+            reset status input
+            buang buffer sampai newline
+            PRINT "Input tidak valid. Masukkan angka menu."
+            PauseSebelumMenu()
+            LANJUT ke iterasi berikutnya
+        END IF
+
+        buang newline tersisa di buffer
 
         SWITCH pilihan
-            CASE 1:
-                INPUT namaPelanggan
+            CASE 0:
+                ClearConsole()
+                PRINT "Keluar dari program..."
 
-                // Pilih jenis sepatu dengan opsi cancel
+            CASE 1:
+                ClearConsole()
+                batalTambah = FALSE
+
+                INPUT namaPelanggan (boleh mengandung spasi)
+
                 ULANGI
-                    Tampilkan opsi sepatu (0-5)
+                    ClearConsole()
+                    Tampilkan opsi jenis sepatu (0..5)
                     INPUT pilihSepatu
+
+                    IF input bukan angka THEN
+                        reset input dan buang buffer
+                        PRINT "Input harus angka"
+                        LANJUTI loop
+                    END IF
+
+                    buang newline buffer
+                    validSepatu = FromChoiceSepatu(pilihSepatu, pesananBaru.jenisSepatu)
+
                     IF pilihSepatu == 0 THEN
-                        tandai batalTambah
+                        batalTambah = TRUE
                         BREAK
                     END IF
-                SAMPAI FromChoiceSepatu valid
+
+                    IF validSepatu == FALSE THEN
+                        PRINT "Pilihan sepatu tidak valid"
+                    END IF
+                SAMPAI validSepatu == TRUE
 
                 IF batalTambah THEN
-                    PRINT "Tambah pesanan dibatalkan"
+                    PRINT "Tambah pesanan berhasil dibatalkan"
                     BREAK CASE
                 END IF
 
-                // Pilih jenis layanan dengan opsi cancel
                 ULANGI
-                    Tampilkan opsi layanan (0-5)
+                    ClearConsole()
+                    Tampilkan opsi jenis layanan (0..5)
                     INPUT pilihLayanan
+
+                    IF input bukan angka THEN
+                        reset input dan buang buffer
+                        PRINT "Input harus angka"
+                        LANJUTI loop
+                    END IF
+
+                    buang newline buffer
+                    validLayanan = FromChoiceLayanan(pilihLayanan, pesananBaru.jenisLayanan)
+
                     IF pilihLayanan == 0 THEN
-                        tandai batalTambah
+                        batalTambah = TRUE
                         BREAK
                     END IF
-                SAMPAI FromChoiceLayanan valid
+
+                    IF validLayanan == FALSE THEN
+                        PRINT "Pilihan layanan tidak valid"
+                    END IF
+                SAMPAI validLayanan == TRUE
 
                 IF batalTambah THEN
-                    PRINT "Tambah pesanan dibatalkan"
+                    PRINT "Tambah pesanan berhasil dibatalkan"
+                    BREAK CASE
+                END IF
+
+                pesananBaru.durasiLayananMenit = DurasiStandarMenit(pesananBaru.jenisLayanan)
+                totalTime = CalculateTime()
+                pesananBaru.estimasiSelesai = totalTime + pesananBaru.durasiLayananMenit
+
+                IF KonfirmasiSebelumEnqueue(pesananBaru) == FALSE THEN
+                    PRINT "Tambah pesanan berhasil dibatalkan"
                     BREAK CASE
                 END IF
 
@@ -221,23 +335,36 @@ START:
                 PRINT "Pesanan berhasil masuk antrean"
 
             CASE 2:
-                ProsesPesananBerikutnya()
+                ClearConsole()
+                IF QueueIsEmpty() THEN
+                    PRINT "Antrean masih kosong"
+                ELSE
+                    pesananDiproses = Dequeue()
+                    PRINT "Memproses pesanan", pesananDiproses.namaPelanggan
+                    PRINT "Cuci sepatu selesai"
+                    PushRiwayat(pesananDiproses)
+                    PRINT "Pesanan dipindahkan ke riwayat"
+                END IF
 
             CASE 3:
+                ClearConsole()
                 TampilTerakhirDiproses()
 
             CASE 4:
+                ClearConsole()
                 TampilAntrean()
 
             CASE 5:
+                ClearConsole()
                 TampilRiwayat()
-
-            CASE 0:
-                PRINT "Keluar program"
 
             DEFAULT:
                 PRINT "Pilihan tidak valid"
         END SWITCH
 
+        IF pilihan != 0 THEN
+            PauseSebelumMenu()
+        END IF
     SAMPAI pilihan == 0
 END
+```
