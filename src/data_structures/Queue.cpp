@@ -48,6 +48,7 @@ Pesanan Queue::dequeue() {
     // Hapus Node lama dari memori agar tidak terjadi memory leak
     delete temp;
 
+    calculateTime();
     return pesananDiproses;
 }
 
