@@ -4,12 +4,9 @@
 #include "models/Pesanan.h"
 #include "data_structures/Queue.h"
 #include "data_structures/Stack.h"
+#include "ui/ui.h"
 
 using namespace std;
-
-void tampilMenu();
-void pauseSebelumMenu();
-void clearConsole();
 
 int main() {
     Queue antreanCucian; // Object Queue untuk antrean
@@ -129,17 +126,27 @@ int main() {
                             cout << "Pilihan layanan tidak valid. \n";
                         }
                     } while (!validLayanan);
+                
                     
                     if (batalTambah) {
                         cout << "=> Tambah pesanan berhasil dibatalkan.\n";
                         break;
                     }
+
+                pesananBaru.durasiLayananMenit = durasiStandarMenit(pesananBaru.jenisLayanan);
+                int totalTime = antreanCucian.calculateTime();
                     
-                    antreanCucian.enqueue(pesananBaru);
-                    
-                    cout << "=> Berhasil! Pesanan " << pesananBaru.namaPelanggan << " masuk ke antrean.\n";
+                pesananBaru.estimasiSelesai = totalTime + pesananBaru.durasiLayananMenit; // Waktu durasi layanan + antrean saat ini.
+
+                if (!konfirmasiSebelumEnqueue(pesananBaru)) {
+                    cout << "=> Tambah pesanan berhasil dibatalkan.\n";
                     break;
                 }
+                antreanCucian.enqueue(pesananBaru);
+                
+                cout << "=> Berhasil! Pesanan " << pesananBaru.namaPelanggan << " masuk ke antrean.\n";
+                break;
+            }
             case 2: {
                 clearConsole();
                 
@@ -183,33 +190,11 @@ int main() {
             default:
             cout << "Pilihan tidak valid!\n";
         }
-
+        
         if (pilihan != 0) {
             pauseSebelumMenu();
         }
     } while (pilihan != 0);
-
+    
     return 0;
 };
-
-void tampilMenu() {
-        cout << "\n=== SISTEM ANTREAN CUCI SEPATU ===\n";
-        cout << "1. Tambah Pesanan Baru (Antrean)\n";
-        cout << "2. Proses Pesanan Berikutnya\n";
-        cout << "3. Tampil pesanan terakhir diproses\n";
-        cout << "4. Tampil antrean\n";
-        cout << "5. Tampil riwayat\n";
-        cout << "0. Keluar\n";
-        cout << "Pilih menu: ";
-}
-    
-void pauseSebelumMenu() {
-    cout << "\nTekan Enter untuk kembali ke menu...";
-    cin.get();
-}
-    
-void clearConsole() {
-    // ANSI escape code to clear screen (2J) and move cursor to top-left (H)
-    std::cout << "\x1B[2J\x1B[H";
-    std::cout.flush(); // Ensure the command is sent immediately
-}

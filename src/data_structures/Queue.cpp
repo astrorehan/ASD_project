@@ -64,10 +64,25 @@ void Queue::display() {
     while (current != nullptr) {
         cout << nomor << ". " << current->data.namaPelanggan 
              << " | Sepatu: " << toString(current->data.jenisSepatu)
-             << " | Layanan: " << toString(current->data.jenisLayanan) << endl;
+             << " | Layanan: " << toString(current->data.jenisLayanan)
+             << " | Estimasi Waktu: " << current->data.estimasiSelesai << endl;
         
         current = current->next;
         nomor++;
     }
     cout << "-------------------------------\n";
+}
+
+int Queue::calculateTime() {
+    Node* current = front;
+    int totalTime = 0;
+
+    while (current != nullptr) {
+        totalTime = totalTime + current->data.durasiLayananMenit;
+        current->data.estimasiSelesai = totalTime;
+
+        current = current->next;
+    }
+
+    return totalTime;
 }

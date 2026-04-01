@@ -69,10 +69,24 @@ inline bool fromChoiceLayanan(int pilihan, JenisLayanan& hasil){
     }
 };
 
+inline int durasiStandarMenit(JenisLayanan nilai) {
+    switch (nilai) {
+        case REGULAR: return 60;
+        case DEEP_CLEANING: return 90;
+        case REPAIR: return 120;
+        case REPAINT: return 150;
+        case WHITENING: return 75;
+        default: return 0;
+    }
+}
+
 struct Pesanan{
     string namaPelanggan;
     JenisSepatu jenisSepatu;
     JenisLayanan jenisLayanan;
+
+    int durasiLayananMenit;  // durasi layanan
+    int estimasiSelesai; // estimasi waktu dari antrean
 };
 
 

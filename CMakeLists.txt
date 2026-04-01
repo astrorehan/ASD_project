@@ -11,6 +11,7 @@ add_executable(ASD_ShoeLaundryQueue
     src/main.cpp
     src/data_structures/Queue.cpp
     src/data_structures/Stack.cpp
+    src/ui/ui.cpp
 )
 
 target_include_directories(ASD_ShoeLaundryQueue PRIVATE src)

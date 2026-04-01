@@ -27,6 +27,9 @@ public:
 
     // Menampilkan seluruh daftar antrean
     void display();
+
+    // Menjumlahkan waktu antrean dan mengassign estimasi sekaligus
+    int calculateTime();
 };
 
 #endif
