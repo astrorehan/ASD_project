@@ -1,0 +1,40 @@
+# Build outputs
+bin/
+build/
+
+# Data persistence (local save files)
+data/
+
+# Vendor libraries (downloaded headers)
+src/vendor/
+
+# Web build
+web/frontend/.next/
+web/frontend/node_modules/
+web/backend/build/
+web/frontend/*.log
+
+# IDE & OS
+.vscode/
+.idea/
+*.exe
+*.o
+*.obj
+*.a
+*.lib
+*.dll
+*.so
+*.dylib
+
+# Environment
+.env
+.env.local
+*.env
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
