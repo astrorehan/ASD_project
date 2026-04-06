@@ -5,12 +5,16 @@
 #include "data_structures/Queue.h"
 #include "data_structures/Stack.h"
 #include "ui/ui.h"
+#include "utils/FileManager.h"
 
 using namespace std;
 
 int main() {
     Queue antreanCucian; // Object Queue untuk antrean
     Stack riwayatCucian; // Object Stack untuk riwayat
+
+    // Load data dari file saat program start
+    FileManager::load(antreanCucian, riwayatCucian);
     
     int pilihan;
     
@@ -31,7 +35,9 @@ int main() {
         switch (pilihan) {
             case 0:
             clearConsole();
-            cout << "Keluar dari program...\n";
+            // Simpan data ke file sebelum keluar
+            FileManager::save(antreanCucian, riwayatCucian);
+            cout << "Data disimpan. Keluar dari program...\n";
             break;
             case 1: {
                 clearConsole();
@@ -182,9 +188,50 @@ int main() {
             }
             case 5: {
                 clearConsole();
-                
+
                 // Menampilkan riwayat pesanan selesai
                 riwayatCucian.display();
+                break;
+            }
+            case 6: {
+                clearConsole();
+
+                // Edit pesanan dalam antrean
+                formEditPesanan(antreanCucian);
+                break;
+            }
+            case 7: {
+                clearConsole();
+
+                // Hapus pesanan dari antrean
+                if (antreanCucian.isEmpty()) {
+                    cout << "\n=> Antrean kosong, tidak ada pesanan yang bisa dihapus.\n";
+                } else {
+                    antreanCucian.display();
+                    int nomor;
+                    cout << "\nMasukkan nomor pesanan yang ingin dihapus: ";
+                    if (!(cin >> nomor)) {
+                        cin.clear();
+                        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                        cout << "Input harus angka!\n";
+                    } else {
+                        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                        int idx = nomor - 1;
+                        if (antreanCucian.removeAt(idx)) {
+                            antreanCucian.calculateTime();
+                            cout << "=> Pesanan berhasil dihapus dari antrean.\n";
+                        } else {
+                            cout << "=> Pesanan dengan nomor tersebut tidak ditemukan.\n";
+                        }
+                    }
+                }
+                break;
+            }
+            case 8: {
+                clearConsole();
+
+                // Tampilkan laporan
+                tampilLaporan(antreanCucian, riwayatCucian);
                 break;
             }
             default:

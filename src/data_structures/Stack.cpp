@@ -8,7 +8,7 @@ Stack::Stack() {
     top = nullptr;
 }
 
-bool Stack::isEmpty() {
+bool Stack::isEmpty() const {
     return top == nullptr;
 }
 
@@ -23,7 +23,7 @@ void Stack::push(Pesanan pesananBaru) {
     top = newNode;
 }
 
-void Stack::peek() {
+void Stack::peek() const {
     if (isEmpty()) {
         cout << "Belum ada riwayat pesanan yang selesai.\n";
         return;
@@ -36,7 +36,7 @@ void Stack::peek() {
     cout << "------------------------------------------\n";
 }
 
-void Stack::display() {
+void Stack::display() const {
     if (isEmpty()) {
         cout << "Riwayat pesanan masih kosong.\n";
         return;

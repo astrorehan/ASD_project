@@ -30,6 +30,23 @@ public:
 
     // Menjumlahkan waktu antrean dan mengassign estimasi sekaligus
     int calculateTime();
+
+    // Dapat pointer ke node di index tertentu (0-based), nullptr jika tidak ada
+    Node* getAt(int index);
+
+    // Update data pesanan di index tertentu
+    bool updateAt(int index, Pesanan newData);
+
+    // Hapus node di index tertentu (0-based)
+    bool removeAt(int index);
+
+    // Traverse semua node (untuk laporan)
+    template<typename Func>
+    void traverse(Func&& func) const {
+        for (Node* cur = front; cur != nullptr; cur = cur->next) {
+            func(cur->data);
+        }
+    }
 };
 
 #endif

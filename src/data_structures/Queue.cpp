@@ -87,3 +87,55 @@ int Queue::calculateTime() {
 
     return totalTime;
 }
+
+Node* Queue::getAt(int index) {
+    if (index < 0) return nullptr;
+    Node* current = front;
+    int i = 0;
+    while (current != nullptr) {
+        if (i == index) return current;
+        current = current->next;
+        i++;
+    }
+    return nullptr;
+}
+
+bool Queue::updateAt(int index, Pesanan newData) {
+    Node* node = getAt(index);
+    if (node == nullptr) return false;
+    node->data = newData;
+    return true;
+}
+
+bool Queue::removeAt(int index) {
+    if (index < 0 || isEmpty()) return false;
+
+    // Hapus di head
+    if (index == 0) {
+        Node* temp = front;
+        front = front->next;
+        if (front == nullptr) rear = nullptr;
+        delete temp;
+        return true;
+    }
+
+    // Traversal ke node sebelum yang dihapus
+    Node* prev = front;
+    for (int i = 0; i < index - 1; i++) {
+        if (prev == nullptr || prev->next == nullptr) return false;
+        prev = prev->next;
+    }
+
+    Node* target = prev->next;
+    if (target == nullptr) return false;
+
+    prev->next = target->next;
+
+    // Jika target adalah rear, update rear
+    if (target == rear) {
+        rear = prev;
+    }
+
+    delete target;
+    return true;
+}
