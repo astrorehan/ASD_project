@@ -10,7 +10,10 @@ WORKDIR /app
 # Clone Crow framework
 RUN git clone --depth 1 --branch v1.1 https://github.com/CrowCpp/Crow.git
 
-# Build only backend (not root CMakeLists.txt)
+# Copy repo to /app (context is repo root)
+COPY . /app/
+
+# Build only backend
 WORKDIR /app/build
 RUN cmake -DCMAKE_BUILD_TYPE=Release /app/web/backend && make -j$(nproc)
 
