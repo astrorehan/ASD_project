@@ -8,13 +8,13 @@ RUN apt-get update && apt-get install -y \
     git \
     && rm -rf /var/lib/apt/lists/*
 
-WORKDIR /app/src
+WORKDIR /app
 
 # Clone Crow framework
 RUN git clone --depth 1 --branch v1.1 https://github.com/CrowCpp/Crow.git
 
-# Copy source (include/nlohmann/json.hpp already in repo)
-COPY . /app/src/
+# Copy source
+COPY . /app/
 
 # Build
 WORKDIR /app/build
