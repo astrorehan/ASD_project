@@ -1,0 +1,13 @@
+build/
+bin/
+data/
+src/build/
+src/vendor/
+src/utils/
+src/data_structures/
+src/ui/
+src/main.cpp
+CMakeLists.txt
+node_modules/
+.git/
+.github/
