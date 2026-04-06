@@ -1,12 +1,10 @@
-# Stage 1: Build
+# Build stage
 FROM ubuntu:22.04 AS builder
 
 RUN apt-get update && apt-get install -y \
     cmake \
     g++ \
     make \
-    git \
-    curl \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app/src
@@ -14,19 +12,14 @@ WORKDIR /app/src
 # Clone Crow framework
 RUN git clone --depth 1 --branch v1.1 https://github.com/CrowCpp/Crow.git
 
-    # Download nlohmann/json
-RUN mkdir -p /app/Crow/include/nlohmann && \
-    curl -L https://raw.githubusercontent.com/nlohmann/json/v3.11.3/single_include/nlohmann/json.hpp \
-    -o /app/Crow/include/nlohmann/json.hpp
-
-# Copy source
+# Copy source (include/nlohmann/json.hpp already in repo)
 COPY . /app/src/
 
 # Build
 WORKDIR /app/build
-RUN cmake -DCMAKE_BUILD_TYPE=Release /app/src && make -j$(nproc)
+RUN cmake -DCMAKE_BUILD_TYPE=Release .. && make -j$(nproc)
 
-# Stage 2: Runtime
+# Runtime stage
 FROM ubuntu:22.04
 
 RUN apt-get update && apt-get install -y \
