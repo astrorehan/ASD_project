@@ -6,6 +6,6 @@
     "context": "."
   },
   "deploy": {
-    "startCommand": "./web/backend/backend"
+    "startCommand": "./backend"
   }
 }
