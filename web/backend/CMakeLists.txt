@@ -7,7 +7,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
-add_definitions(-D_WIN32_WINNT=0x0A00)
+add_definitions(-DNOMINMAX)
 
 add_executable(backend
     main.cpp
@@ -19,4 +19,6 @@ add_executable(backend
 
 if(WIN32)
     target_link_libraries(backend ws2_32)
+elseif(UNIX)
+    target_link_libraries(backend pthread)
 endif()

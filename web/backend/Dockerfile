@@ -1,11 +1,12 @@
-# Build stage
-FROM alpine:3.19 AS builder
+# Stage 1: Build
+FROM ubuntu:22.04 AS builder
 
-RUN apk add --no-cache \
+RUN apt-get update && apt-get install -y \
     cmake \
     g++ \
     make \
-    git
+    git \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
@@ -21,10 +22,13 @@ RUN mkdir /app/build && \
     cmake -DCMAKE_BUILD_TYPE=Release /app/src && \
     make -j$(nproc)
 
-# Runtime stage
-FROM alpine:3.19
+# Stage 2: Runtime
+FROM ubuntu:22.04
 
-RUN apk add --no-cache libgcc libstdc++
+RUN apt-get update && apt-get install -y \
+    libstdc++6 \
+    libgcc-s1 \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 COPY --from=builder /app/build/backend /app/backend
