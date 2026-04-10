@@ -367,4 +367,260 @@ START
         END IF
     SAMPAI pilihan == 0
 END
+
+```
+
+## 7. REST API Endpoints (Web)
+
+Dokumentasi ini menyesuaikan dengan implementasi backend REST API di folder web/backend, menggunakan Crow framework C++.
+
+### 7.1 Tipe Data API
+
+```text
+JSON Pesanan:
+{
+    "namaPelanggan": STRING,
+    "jenisSepatu": INTEGER (0-4),
+    "jenisSepatuStr": STRING,
+    "jenisLayanan": INTEGER (0-4),
+    "jenisLayananStr": STRING,
+    "durasiLayananMenit": INTEGER,
+    "estimasiSelesai": INTEGER
+}
+
+JSON Response:
+{
+    "success": BOOLEAN,
+    "message": STRING (opsional),
+    "data": Pesanan | ARRAY[Pesanan] (opsional),
+    "count": INTEGER (opsional)
+}
+
+JSON Report:
+{
+    "success": BOOLEAN,
+    "data": {
+        "layanan": ARRAY[
+            { "name": STRING, "inQueue": INTEGER, "completed": INTEGER, "total": INTEGER }
+        ],
+        "totalInQueue": INTEGER,
+        "totalCompleted": INTEGER,
+        "totalAll": INTEGER
+    }
+}
+```
+
+### 7.2 Enum Mapping
+
+```text
+jenisSepatu:
+    0 -> SNEAKERS
+    1 -> BOOTS
+    2 -> SANDALS
+    3 -> FORMAL
+    4 -> OLAHRAGA
+
+jenisLayanan:
+    0 -> REGULAR      (60 menit)
+    1 -> DEEP_CLEANING (90 menit)
+    2 -> REPAIR       (120 menit)
+    3 -> REPAINT      (150 menit)
+    4 -> WHITENING    (75 menit)
+```
+
+### 7.3 Endpoint Routes
+
+```text
+METHOD GET, PATH /
+    ALIAS health_check
+    DESKRIPSI: Cek apakah server hidup
+    REQUEST: tidak ada body
+    RESPONSE:
+        {
+            "status": "ok",
+            "service": "ASD Shoe Laundry API"
+        }
+END
+
+METHOD GET, PATH /queue
+    ALIAS get_queue
+    DESKRIPSI: Ambil semua pesanan dalam antrean
+    REQUEST: tidak ada body
+    RESPONSE:
+        {
+            "success": TRUE,
+            "data": ARRAY[Pesanan],
+            "count": INTEGER
+        }
+END
+
+METHOD POST, PATH /queue
+    ALIAS add_order
+    DESKRIPSI: Tambah pesanan baru ke antrean
+    REQUEST BODY:
+        {
+            "namaPelanggan": STRING,
+            "jenisSepatu": INTEGER (0-4),
+            "jenisLayanan": INTEGER (0-4)
+        }
+    PROSES:
+        IF namaPelanggan kosong THEN
+            RETURN error "namaPelanggan is required", status 400
+        END IF
+
+        BUAT Pesanan p
+        p.namaPelanggan = namaPelanggan
+        p.jenisSepatu = enum dari integer
+        p.jenisLayanan = enum dari integer
+        p.durasiLayananMenit = DurasiStandarMenit(jenisLayanan)
+
+        HITUNG baseEstimasi dari semua pesanan di antrean
+        p.estimasiSelesai = baseEstimasi + p.durasiLayananMenit
+
+        PANGGIL antreanCucian.enqueue(p)
+        PANGGIL antreanCucian.calculateTime()
+
+        RETURN success dengan data pesanan, status 201
+    RESPONSE:
+        {
+            "success": TRUE,
+            "message": "Pesanan ditambahkan ke antrean",
+            "data": Pesanan
+        }
+END
+
+METHOD PUT, PATH /queue/:index
+    ALIAS update_order
+    DESKRIPSI: Edit pesanan di antrean berdasarkan index
+    PARAM: index = INTEGER (0-based)
+    REQUEST BODY (semua opsional):
+        {
+            "namaPelanggan": STRING,
+            "jenisSepatu": INTEGER,
+            "jenisLayanan": INTEGER
+        }
+    PROSES:
+        target = antreanCucian.getAt(index)
+        IF target == NULL THEN
+            RETURN error "Index out of range", status 400
+        END IF
+
+        IF body.jenisLayanan ada THEN
+            target.jenisLayanan = enum dari body
+            target.durasiLayananMenit = DurasiStandarMenit(target.jenisLayanan)
+        END IF
+
+        PANGGIL antreanCucian.calculateTime()
+
+        RETURN success dengan data pesanan yang diupdate
+END
+
+METHOD DELETE, PATH /queue/:index
+    ALIAS remove_order
+    DESKRIPSI: Hapus pesanan dari antrean berdasarkan index
+    PARAM: index = INTEGER (0-based)
+    PROSES:
+        hasil = antreanCucian.removeAt(index)
+        IF hasil == FALSE THEN
+            RETURN error "Index out of range", status 400
+        END IF
+
+        PANGGIL antreanCucian.calculateTime()
+
+        RETURN success "Pesanan dihapus dari antrean"
+END
+
+METHOD DELETE, PATH /queue/process
+    ALIAS process_next
+    DESKRIPSI: Ambil dan proses pesanan berikutnya dari antrean
+    PROSES:
+        IF antreanCucian.isEmpty() THEN
+            RETURN error "Antrean kosong", status 400
+        END IF
+
+        p = antreanCucian.dequeue()
+        riwayatCucian.push(p)
+        PANGGIL antreanCucian.calculateTime()
+
+        RETURN success dengan data pesanan yang diproses
+END
+
+METHOD GET, PATH /history
+    ALIAS get_history
+    DESKRIPSI: Ambil semua riwayat pesanan yang sudah diproses
+    RESPONSE:
+        {
+            "success": TRUE,
+            "data": ARRAY[Pesanan],
+            "count": INTEGER
+        }
+END
+
+METHOD GET, PATH /history/latest
+    ALIAS get_latest
+    DESKRIPSI: Ambil pesanan terakhir yang diproses
+    PROSES:
+        p = riwayatCucian.peek()
+        IF p == NULL THEN
+            RETURN error "Belum ada riwayat", status 404
+        END IF
+
+        RETURN success dengan data pesanan
+END
+
+METHOD GET, PATH /report
+    ALIAS get_report
+    DESKRIPSI: Ambil laporan ringkasan pesanan per jenis layanan
+    PROSES:
+        BUAT ARRAY qCount[5] = {0}
+        BUAT ARRAY sCount[5] = {0}
+
+        TRAVERSE antreanCucian:
+            idx = integer dari p.jenisLayanan
+            qCount[idx] = qCount[idx] + 1
+        END TRAVERSE
+
+        TRAVERSE riwayatCucian:
+            idx = integer dari p.jenisLayanan
+            sCount[idx] = sCount[idx] + 1
+        END TRAVERSE
+
+        BUAT ARRAY layanan dari qCount dan sCount per jenis layanan
+
+        RETURN:
+        {
+            "success": TRUE,
+            "data": {
+                "layanan": ARRAY[{name, inQueue, completed, total}],
+                "totalInQueue": INTEGER,
+                "totalCompleted": INTEGER,
+                "totalAll": INTEGER
+            }
+        }
+END
+```
+
+### 7.4 Program Utama API
+
+```text
+START
+    BUAT Server srv
+
+    SET CORS headers untuk semua response:
+        Access-Control-Allow-Origin: *
+        Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS
+        Access-Control-Allow-Headers: Content-Type
+
+    REGISTER semua routes sesuai 7.3
+
+    AMBIL PORT dari environment variable PORT
+    JIKA tidak ada, PAKE default 8080
+
+    PRINT "ASD Shoe Laundry API running on port PORT"
+
+    srv.listen("0.0.0.0", PORT)
+
+    TUNGGU indefinitely (server blocking)
+END
+```
 ```
