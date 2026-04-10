@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Pesanan, JENIS_SEPATU_MAP, JENIS_LAYANAN_MAP } from "@/app/lib/types";
 import { api } from "@/app/lib/api";
-import { Trash2, Edit3, Clock, CheckCircle } from "lucide-react";
+import { Trash2, Edit3, Clock, CheckCircle, ClipboardList } from "lucide-react";
 
 interface QueueListProps {
   orders: Pesanan[];
@@ -68,47 +68,45 @@ export default function QueueList({ orders, onRefresh, onEdit }: QueueListProps)
               key={i}
               className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow"
             >
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="bg-cyan-100 text-cyan-700 text-xs font-bold px-2 py-0.5 rounded-full">
-                      #{i + 1}
-                    </span>
-                    <h3 className="font-semibold text-slate-800">{order.namaPelanggan}</h3>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="bg-cyan-100 text-cyan-700 text-xs font-bold px-2 py-0.5 rounded-full flex-shrink-0">
+                    #{i + 1}
+                  </span>
+                  <h3 className="font-semibold text-slate-800 truncate">{order.namaPelanggan}</h3>
+                </div>
+                <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-xs text-slate-500">
+                  <span>{JENIS_SEPATU_MAP[order.jenisSepatu]}</span>
+                  <span>{JENIS_LAYANAN_MAP[order.jenisLayanan]}</span>
+                  <span>{order.durasiLayananMenit} menit</span>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 mt-2 sm:mt-0 flex-shrink-0">
+                <div className="text-right hidden sm:block">
+                  <div className="flex items-center gap-1 text-xs text-slate-500">
+                    <Clock size={12} />
+                    Estimasi
                   </div>
-                  <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-slate-500">
-                    <span>👟 {JENIS_SEPATU_MAP[order.jenisSepatu]}</span>
-                    <span>🛠️ {JENIS_LAYANAN_MAP[order.jenisLayanan]}</span>
-                    <span>⏱️ {order.durasiLayananMenit} menit</span>
+                  <div className="font-semibold text-cyan-600 text-sm">
+                    {order.estimasiSelesai} menit
                   </div>
                 </div>
-                <div className="flex items-center gap-3">
-                  <div className="text-right">
-                    <div className="flex items-center gap-1 text-sm text-slate-500">
-                      <Clock size={14} />
-                      Estimasi selesai
-                    </div>
-                    <div className="font-semibold text-cyan-600">
-                      {order.estimasiSelesai} menit
-                    </div>
-                  </div>
-                  <div className="flex gap-1">
-                    <button
-                      onClick={() => onEdit(i, order)}
-                      className="p-2 text-blue-500 hover:bg-blue-50 rounded-lg transition-colors"
-                      title="Edit"
-                    >
-                      <Edit3 size={16} />
-                    </button>
-                    <button
-                      onClick={() => handleRemove(i)}
-                      disabled={removing === i}
-                      className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
-                      title="Hapus"
-                    >
-                      <Trash2 size={16} />
-                    </button>
-                  </div>
+                <div className="flex items-center gap-1 sm:ml-2">
+                  <button
+                    onClick={() => onEdit(i, order)}
+                    className="p-2 text-blue-500 hover:bg-blue-50 rounded-lg transition-colors"
+                    title="Edit"
+                  >
+                    <Edit3 size={15} />
+                  </button>
+                  <button
+                    onClick={() => handleRemove(i)}
+                    disabled={removing === i}
+                    className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
+                    title="Hapus"
+                  >
+                    <Trash2 size={15} />
+                  </button>
                 </div>
               </div>
             </div>
@@ -118,5 +116,3 @@ export default function QueueList({ orders, onRefresh, onEdit }: QueueListProps)
     </div>
   );
 }
-
-import { ClipboardList } from "lucide-react";
