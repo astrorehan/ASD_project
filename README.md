@@ -1,43 +1,86 @@
-# Sistem Antrean Cuci Sepatu (C++)
+# Sistem Antrean Cuci Sepatu
 
-Project ini adalah implementasi tugas ASD untuk manajemen antrean pelanggan tempat cuci sepatu berbasis CLI.
-
-Struktur data yang digunakan:
-- Queue (linked list) untuk pesanan yang belum diproses
-- Stack (linked list) untuk riwayat pesanan selesai
+Manajemen antrean tempat cuci sepatu menggunakan struktur data **Queue** dan **Stack** berbasis **Linked List** dengan implementasi **C++ CLI** dan **Web (Next.js + REST API)**.
 
 ## Fitur Utama
 
-1. Menambah pesanan baru ke antrean
-2. Validasi input agar menu dan pilihan berupa angka
-3. Opsi batal saat pilih jenis sepatu/layanan (0 = Cancel)
-4. Perhitungan durasi layanan dan estimasi selesai otomatis
-5. Konfirmasi sebelum pesanan dimasukkan ke antrean
-6. Memproses pesanan berikutnya (dequeue)
-7. Memindahkan pesanan selesai ke riwayat (push stack)
-8. Menampilkan pesanan terakhir yang diproses (peek)
-9. Menampilkan seluruh antrean aktif dan riwayat selesai
+### Program CLI
+1. **Tambah pesanan** — masukkan pelanggan baru ke antrean
+2. **Proses pesanan** — dequeue pesanan depan, push ke riwayat
+3. **Edit pesanan** — ubah data pesanan dalam antrean
+4. **Hapus pesanan** — hapus pesanan dari antrean
+5. **Lihat antrean** — tampilkan semua pesanan aktif
+6. **Lihat riwayat** — tampilkan semua pesanan selesai
+7. **Laporan** — ringkasan jumlah pesanan per jenis layanan
+8. **Persistensi** — data tersimpan otomatis ke file JSON
 
-## Data Pesanan
+### Program Web
+- Frontend Next.js dengan antarmuka modern
+- Backend REST API C++ (Crow framework)
+- Deployable ke Railway + Vercel
 
-Implementasi saat ini menyimpan data berikut:
-- namaPelanggan (string)
-- jenisSepatu (enum)
-- jenisLayanan (enum)
-- durasiLayananMenit (int)
-- estimasiSelesai (int, menit)
+---
 
-Durasi standar per layanan:
-- REGULAR: 60 menit
-- DEEP_CLEANING: 90 menit
-- REPAIR: 120 menit
-- REPAINT: 150 menit
-- WHITENING: 75 menit
+## Menu Program
+
+| Menu | Fungsi |
+|------|--------|
+| 1 | Tambah pesanan baru |
+| 2 | Proses pesanan berikutnya (dequeue) |
+| 3 | Tampilkan pesanan terakhir diproses |
+| 4 | Lihat antrean |
+| 5 | Lihat riwayat selesai |
+| 6 | Edit pesanan dalam antrean |
+| 7 | Hapus pesanan dari antrean |
+| 8 | Tampilkan laporan |
+| 0 | Keluar (data otomatis tersimpan) |
+
+---
+
+## Struktur Data
+
+### Queue (Antrean) — FIFO
+Menyimpan pesanan yang belum diproses menggunakan linked list dengan pointer `front` dan `rear`.
+
+| Operasi | Kompleksitas | Keterangan |
+|---------|-------------|-------------|
+| `enqueue` | O(1) | Tambah di belakang |
+| `dequeue` | O(1) | Hapus di depan |
+| `getAt` | O(n) | Akses node by index |
+| `updateAt` | O(n) | Update node by index |
+| `removeAt` | O(n) | Hapus node by index |
+| `calculateTime` | O(n) | Hitung estimasi semua pesanan |
+| `traverse` | O(n) | Kunjungi semua node |
+
+### Stack (Riwayat) — LIFO
+Menyimpan pesanan yang telah selesai menggunakan linked list dengan pointer `top`.
+
+| Operasi | Kompleksitas | Keterangan |
+|---------|-------------|-------------|
+| `push` | O(1) | Tambah di top |
+| `pop` | O(1) | Hapus dari top |
+| `peek` | O(1) | Lihat top |
+| `traverse` | O(n) | Kunjungi semua node |
+
+### Jenis Layanan
+
+| Layanan | Durasi |
+|---------|--------|
+| Regular | 60 menit |
+| Deep Cleaning | 90 menit |
+| Repair | 120 menit |
+| Repaint | 150 menit |
+| Whitening | 75 menit |
+
+---
 
 ## Struktur Project
 
-```text
+```
 ASD_project/
+├── .github/
+│   └── workflows/
+│       └── backend.yml          # CI/CD Docker build
 ├── docs/
 │   ├── flowchart.png
 │   ├── pseudocode.md
@@ -45,69 +88,186 @@ ASD_project/
 ├── src/
 │   ├── data_structures/
 │   │   ├── Node.h
-│   │   ├── Queue.h
-│   │   ├── Queue.cpp
-│   │   ├── Stack.h
-│   │   └── Stack.cpp
+│   │   ├── Queue.h / Queue.cpp
+│   │   └── Stack.h / Stack.cpp
 │   ├── models/
 │   │   └── Pesanan.h
 │   ├── ui/
-│   │   ├── ui.h
-│   │   └── ui.cpp
+│   │   ├── ui.h / ui.cpp
+│   ├── utils/
+│   │   ├── FileManager.h / FileManager.cpp
+│   ├── vendor/
+│   │   └── json.hpp              # nlohmann/json
 │   └── main.cpp
-├── bin/
-├── build/
+├── web/
+│   ├── backend/
+│   │   ├── main.cpp              # REST API (Crow)
+│   │   ├── Dockerfile
+│   │   ├── models/
+│   │   ├── data_structures/
+│   │   └── include/
+│   └── frontend/                 # Next.js
+│       ├── app/
+│       │   ├── page.tsx          # Antrean
+│       │   ├── history/
+│       │   ├── report/
+│       │   └── components/
+│       └── lib/
+│           ├── api.ts
+│           └── types.ts
+├── railway.json                   # Railway deployment
 ├── CMakeLists.txt
 └── README.md
 ```
 
-## Build dan Jalankan (PowerShell)
+---
+
+## Build dan Jalankan (CLI)
+
+### Prerequisites
+- CMake 3.15+
+- MinGW Makefiles atau compiler C++17
+
+### Build
 
 ```powershell
 cmake -S . -B build -G "MinGW Makefiles"
 cmake --build build
+```
+
+### Jalankan
+
+```powershell
 .\bin\ASD_ShoeLaundryQueue.exe
 ```
 
-## Cara Pakai Singkat
+### Output Contoh
 
-Setelah program berjalan, menu utama:
-1. Tambah pesanan baru
-2. Proses pesanan berikutnya
-3. Tampil pesanan terakhir diproses
-4. Tampil antrean
-5. Tampil riwayat
+```
+==============================================
+   SISTEM ANTrean Cuci Sepatu
+==============================================
+1. Tambah Pesanan Baru
+2. Proses Pesanan Berikutnya
+3. Tampilkan Pesanan Terakhir Diproses
+4. Lihat Antrean
+5. Lihat Riwayat
+6. Edit Pesanan
+7. Hapus Pesanan
+8. Lihat Laporan
 0. Keluar
+==============================================
+Masukkan pilihan: _
+```
 
-Alur demo cepat:
-1. Tambah 2 pesanan
-2. Lihat antrean
-3. Proses 1 pesanan
-4. Lihat pesanan terakhir diproses
-5. Lihat riwayat
+---
 
-## Dokumen Pendukung
+## Deploy Web
 
-1. Flowchart: docs/flowchart.png
-2. Pseudocode: docs/pseudocode.md
-3. Analisis Big O: docs/analisis_big_o.md
+### Backend — Railway
 
-## Analisis Kompleksitas (Ringkas)
+1. Buka [railway.app](https://railway.app)
+2. Hubungkan repo GitHub
+3. Railway auto-read `railway.json`
+4. Docker build dari `web/backend/Dockerfile`
+5. Backend URL: `https://asdproject-production.up.railway.app`
 
-- enqueue: O(1)
-- dequeue: O(1)
-- push riwayat: O(1)
-- peek riwayat: O(1)
-- display antrean: O(n)
-- display riwayat: O(n)
-- calculateTime (dipakai saat tambah pesanan): O(n)
+### Frontend — Vercel
 
-Catatan:
-- Secara struktur data, enqueue tetap O(1).
-- Pada alur fitur saat ini, tambah pesanan memanggil calculateTime lebih dulu untuk estimasi, sehingga total alur tambah bisa melibatkan traversal O(n).
+1. Buka [vercel.com](https://vercel.com)
+2. Import repo `astrorehan/ASD_project`
+3. Set root directory: `web/frontend`
+4. Tambahkan environment variable:
+   - `NEXT_PUBLIC_API_URL` = URL Railway backend
+5. Deploy
+6. Frontend URL: `https://shoe-laundry.vercel.app/`
 
-## Rencana Pengembangan
+### API Endpoints
 
-1. Persistensi data ke file lokal
-2. Fitur edit/hapus pesanan yang masih dalam antrean
-3. Laporan sederhana (jumlah pesanan per jenis layanan)
+| Method | Endpoint | Deskripsi |
+|--------|----------|-----------|
+| GET | `/` | Health check |
+| GET | `/queue` | List antrean |
+| POST | `/queue` | Tambah pesanan |
+| PUT | `/queue/:index` | Edit pesanan |
+| DELETE | `/queue/:index` | Hapus pesanan |
+| DELETE | `/queue/process` | Proses berikutnya |
+| GET | `/history` | List riwayat |
+| GET | `/history/latest` | Pesanan terakhir |
+| GET | `/report` | Laporan ringkasan |
+
+---
+
+## Persistensi Data (CLI)
+
+Data disimpan ke `data/save.json` secara otomatis saat keluar.
+
+```json
+{
+  "queue": [
+    {
+      "namaPelanggan": "Andi",
+      "jenisSepatu": 0,
+      "jenisLayanan": 1,
+      "durasiLayananMenit": 90,
+      "estimasiSelesai": 90
+    }
+  ],
+  "stack": [
+    {
+      "namaPelanggan": "Budi",
+      "jenisSepatu": 2,
+      "jenisLayanan": 0,
+      "durasiLayananMenit": 60,
+      "estimasiSelesai": 0
+    }
+  ]
+}
+```
+
+### Enum Mapping
+
+**jenisSepatu:**
+| Index | Nilai |
+|-------|-------|
+| 0 | SNEAKERS |
+| 1 | BOOTS |
+| 2 | SANDALS |
+| 3 | FORMAL |
+| 4 | OLAHRAGA |
+
+**jenisLayanan:**
+| Index | Nilai |
+|-------|-------|
+| 0 | REGULAR |
+| 1 | DEEP_CLEANING |
+| 2 | REPAIR |
+| 3 | REPAINT |
+| 4 | WHITENING |
+
+---
+
+## Dokumentasi Pendukung
+
+| Dokumen | Lokasi |
+|---------|--------|
+| Pseudocode | `docs/pseudocode.md` |
+| Analisis Big O | `docs/analisis_big_o.md` |
+
+---
+
+## Changelog
+
+### v2.0 — Penambahan Fitur Web
+- REST API backend dengan Crow framework
+- Frontend Next.js + Tailwind CSS
+- Deployment Railway + Vercel
+- Docker containerization
+
+### v1.0 — Implementasi Awal
+- CLI dengan menu interaktif
+- Queue dan Stack dengan linked list
+- Persistensi data ke JSON
+- Fitur edit, hapus, dan laporan
+
+---
