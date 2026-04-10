@@ -1,80 +1,36 @@
-# Shoe Laundry Web
+# Shoe Laundry — Web Application
 
-Implementasi web dari sistem antrean cuci sepatu. Backend C++ (Crow framework) + Frontend Next.js (React + Tailwind).
+Implementasi web dari sistem antrean cuci sepatu. Backend REST API C++ (Crow) + Frontend Next.js + Tailwind CSS.
 
 ## Struktur
 
 ```
 web/
-├── backend/              # C++ REST API (Crow)
-│   ├── main.cpp
-│   ├── CMakeLists.txt
-│   ├── Dockerfile        # Build Docker image
-│   ├── models/
-│   ├── data_structures/
-│   └── include/          # Crow framework
-├── frontend/             # Next.js (React + Tailwind)
+├── backend/                      # C++ REST API
+│   ├── main.cpp                 # Crow HTTP server
+│   ├── Dockerfile                # Docker build
+│   ├── railway.json              # Railway config
+│   ├── models/                  # Pesanan struct
+│   ├── data_structures/         # Queue & Stack
+│   └── include/                 # Crow + nlohmann/json
+│
+├── frontend/                     # Next.js + Tailwind
 │   ├── app/
-│   │   ├── page.tsx      # Antrean
-│   │   ├── history/       # Riwayat
-│   │   ├── report/        # Laporan
-│   │   └── lib/           # API client, types
-│   ├── vercel.json       # Vercel config
-│   └── .env.local        # API URL
-└── README.md
-```
-
-## Cara Deploy
-
-### 1. Backend → Render.com (Free Tier)
-
-1. Buat akun di [render.com](https://render.com)
-2. Klik **New → Web Service**
-3. Hubungkan repo GitHub kamu
-4. Seting:
-   - **Root Directory:** `backend`
-   - **Build Command:** `docker build -t backend .`
-   - **Start Command:** `docker run -p 10000:10000 backend`
-   - **Plan:** Free
-5. Klik **Create Web Service**
-6. Tunggu build selesai
-7. URL backend akan muncul, contoh: `https://shoe-laundry.onrender.com`
-
-### 2. Frontend → Vercel (Gratis)
-
-1. Buat akun di [vercel.com](https://vercel.com)
-2. Import repo GitHub
-3. Seting:
-   - **Root Directory:** `frontend`
-   - **Environment Variables:**
-     - `NEXT_PUBLIC_API_URL` = URL backend kamu (contoh: `https://shoe-laundry.onrender.com`)
-4. Klik **Deploy**
-
-### 3. Update Frontend Config
-
-Setelah backend di-deploy, update `frontend/vercel.json`:
-
-```json
-{
-  "rewrites": [
-    {
-      "source": "/api/proxy/:path*",
-      "destination": "https://YOUR-RENDER-APP.onrender.com/:path*"
-    }
-  ]
-}
-```
-
-Atau update `.env.local`:
-
-```env
-NEXT_PUBLIC_API_URL=https://YOUR-RENDER-APP.onrender.com
+│   │   ├── page.tsx             # Halaman Antrean
+│   │   ├── history/             # Halaman Riwayat
+│   │   ├── report/             # Halaman Laporan
+│   │   └── components/         # UI components
+│   └── lib/
+│       ├── api.ts               # API client
+│       └── types.ts            # TypeScript types
+│
+└── README.md                    # Dokumen ini
 ```
 
 ## API Endpoints
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
+| Method | Endpoint | Deskripsi |
+|--------|----------|-----------|
 | GET | `/` | Health check |
 | GET | `/queue` | List semua pesanan |
 | POST | `/queue` | Tambah pesanan baru |
@@ -83,21 +39,36 @@ NEXT_PUBLIC_API_URL=https://YOUR-RENDER-APP.onrender.com
 | DELETE | `/queue/process` | Proses pesanan berikutnya |
 | GET | `/history` | List riwayat |
 | GET | `/history/latest` | Pesanan terakhir diproses |
-| GET | `/report` | Laporan per jenis layanan |
+| GET | `/report` | Laporan ringkasan |
+
+## Deploy
+
+### Backend — Railway
+
+1. Buka [railway.app](https://railway.app)
+2. Hubungkan repo GitHub
+3. Railway auto-read `railway.json`
+4. Deploy
+
+### Frontend — Vercel
+
+1. Buka [vercel.com](https://vercel.com)
+2. Import repo
+3. Set root: `web/frontend`
+4. Environment: `NEXT_PUBLIC_API_URL` = URL Railway
+5. Deploy
 
 ## Local Development
 
-### Backend (local)
+### Backend (Docker)
 
 ```bash
 cd backend
-mkdir build && cd build
-cmake .. -G "MinGW Makefiles"
-make
-./backend.exe
+docker build -t shoe-laundry-backend .
+docker run -p 8080:10000 shoe-laundry-backend
 ```
 
-### Frontend (local)
+### Frontend
 
 ```bash
 cd frontend
@@ -105,10 +76,12 @@ npm install
 npm run dev
 ```
 
-### Docker (local)
+## Tech Stack
 
-```bash
-cd backend
-docker build -t shoe-laundry-backend .
-docker run -p 8080:10000 shoe-laundry-backend
-```
+| Layer | Teknologi |
+|-------|-----------|
+| Backend | C++17, Crow Framework |
+| Frontend | Next.js 16, React, TypeScript, Tailwind CSS |
+| HTTP Server | Crow (header-only C++) |
+| Container | Docker, Railway |
+| Hosting | Railway (backend), Vercel (frontend) |
